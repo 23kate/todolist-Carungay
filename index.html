@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+        crossorigin="anonymous">
+
+    <!-- SweetAlert CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- SweetAlert JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        header {
+            background-color: #67a5e7; 
+            color: #ffffff;
+        }
+        .btn-dark {
+            background-color: #6da2da; 
+            border-color: #0056b3;
+        }
+        .btn-dark:hover {
+            background-color: #004080; 
+            border-color: #004080;
+        }
+        .card-container {
+            border: 1px solid #dee2e6;
+            border-radius: .25rem;
+            box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+            padding: 1.5rem;
+            background-color: #ffffff;
+        }
+    </style>
+
+    <script src="app.js" defer></script>
+    <title>To Do List</title>
+</head>
+
+<body>
+    <header class="py-4">
+        <div class="container text-center">
+            <h1 class="display-4">
+                <i class="bi bi-check-all"></i> To Do List
+            </h1>
+        </div>
+    </header>
+
+    <div class="container mt-4">
+        <div class="card-container">
+            <h2>Add Items</h2>
+
+            <form id="addForm" class="mb-4">
+                <div class="form-row">
+                    <div class="col-lg-8 col-md-8 col-sm-12 mb-2">
+                        <input type="text" onkeyup="toggleButton(this, 'submit')"
+                            class="form-control" id="item" placeholder="Enter task" required>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-12">
+                        <button type="submit" class="btn btn-dark btn-block" id="submit" disabled>
+                            <i class="bi bi-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <h3>Tasks</h3>
+            <ul class="list-group" id="items"></ul>
+        </div>
+    </div>
+
+    <script>
+        function toggleButton(input, buttonId) {
+            const button = document.getElementById(buttonId);
+            button.disabled = input.value.trim() === '';
+        }
+
+        function createTaskItem(taskValue) {
+            const newItem = document.createElement('li');
+            newItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+            newItem.innerHTML = `
+                <span>${taskValue}</span>
+                <div>
+                    <button class="btn btn-warning btn-sm mr-2 edit-btn">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm delete-btn">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
+            return newItem;
+        }
+
+        document.getElementById('addForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+
+            const taskValue = document.getElementById('item').value; 
+
+            Swal.fire({
+                title: 'Task Added!',
+                text: `You have added: "${taskValue}"`,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+
+            const itemsList = document.getElementById('items');
+            const newItem = createTaskItem(taskValue);
+            itemsList.appendChild(newItem);
+
+            document.getElementById('item').value = '';
+            toggleButton(document.getElementById('item'), 'submit');
+
+            attachItemButtons(newItem);
+        });
+
+        function attachItemButtons(item) {
+            const editButton = item.querySelector('.edit-btn');
+            const deleteButton = item.querySelector('.delete-btn');
+
+            editButton.addEventListener('click', function() {
+                const taskText = item.querySelector('span').textContent;
+                Swal.fire({
+                    title: 'Edit Task',
+                    input: 'text',
+                    inputValue: taskText,
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed && result.value.trim() !== '') {
+                        item.querySelector('span').textContent = result.value;
+                        Swal.fire('Saved!', 'Your task has been updated.', 'success');
+                    }
+                });
+            });
+
+            deleteButton.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        item.remove();
+                        Swal.fire('Deleted!', 'Your task has been deleted.', 'success');
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>
